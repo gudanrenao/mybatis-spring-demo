@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring.xsd">
+
+    <!-- bean definitions here -->
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <!--一个常用的属性是 configLocation，它用来指定 MyBatis 的 XML 配置文件路径。它在需要修改 MyBatis 的基础配置非常有用。通常，基础配置指的是 <settings> 或 <typeAliases> 元素-->
+        <property name="configLocation" value="mybatis-config.xml"/>
+        <property name="mapperLocations" value="mapper/**/*.xml"/>
+    </bean>
+
+    <bean id="dataSource" class="org.apache.ibatis.datasource.pooled.PooledDataSource">
+        <property name="driver" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/zhangwenit"/>
+        <property name="username" value="root"/>
+        <property name="password" value="123456"/>
+    </bean>
+
+    <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="sqlSessionFactory"/>
+    </bean>
+
+    <!--<bean id="personMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">-->
+        <!--<property name="mapperInterface" value="com.zhangwenit.mybatis.spring.demo.mapper.PersonMapper"/>-->
+        <!--&lt;!&ndash;<property name="sqlSessionFactory" ref="sqlSessionFactory"/>&ndash;&gt;-->
+        <!--<property name="sqlSessionTemplate" ref="sqlSessionTemplate"/>-->
+    <!--</bean>-->
+
+    <bean id="personService" class="com.zhangwenit.mybatis.spring.demo.service.PersonService">
+        <constructor-arg index="0" ref="personMapper"/>
+        <property name="sqlSessionTemplate" ref="sqlSessionTemplate"/>
+        <!--<property name="sqlSessionFactory" ref="sqlSessionFactory"/>-->
+    </bean>
+
+    <!--开启 Spring 的事务处理功能 标准配置-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <constructor-arg ref="dataSource"/>
+    </bean>
+
+    <!--<tx:jta-transaction-manager/>-->
+
+    <!--映射器自动发现 如果只有一个DataSource,可以不用指定factory-ref 或 template-ref-->
+    <!--<mybatis:scan base-package="com.zhangwenit.mybatis.spring.demo.mapper" template-ref="sqlSessionTemplate" />-->
+     <!--作用同<mybatis:scan/>-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.zhangwenit.mybatis.spring.demo.mapper"/>
+        <property name="sqlSessionTemplateBeanName" value="sqlSessionTemplate"/>
+    </bean>
+</beans>
